@@ -4,97 +4,114 @@ import Main from '../views/Main.vue'
 
 Vue.use(VueRouter)
 
+//重写Vue-Router原型链上的router.push/router.replace方法，捕获Promise异常
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+// const originalPush = VueRouter.prototype.replace;
+// VueRouter.prototype.replace = function replace(location) {
+//     return originalPush.call(this, location).catch(err => err)
+// };
+
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    isAuth:false,
     component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue'),
-    meta:{
-      title:"登录"
+    meta: {
+      title: "登录"
     }
   },
   {
-    path:'/',
-    name:'Main',
-    component:Main,
-    redirect:'/registration-statistics',
-    children:[
+    path: '/',
+    name: 'Main',
+    component: Main,
+    redirect: '/registration-statistics',
+    children: [
       {
         path: 'registration-statistics',
         name: 'registration-statistics',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "registration-statistics" */ '../views/SignInManagement/RegistrationStatistics.vue'),
-        meta:{
-          title:"报名统计"
+        meta: {
+          title: "报名统计",
+          isAuth: true,
         }
       },
       {
         path: 'sign-in-statistics',
         name: 'sign-in-statistics',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "sign-in-statistics" */ '../views/SignInManagement/SignInStatistics.vue'),
-        meta:{
-          title:"签到统计"
+        meta: {
+          title: "签到统计",
+          isAuth: true,
         }
       },
       {
         path: 'create-meeting',
         name: 'create-meeting',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "create-meeting" */ '../views/MeetingManagement/CreateMeeting.vue'),
-        meta:{
-          title:"创建会议"
+        meta: {
+          title: "创建会议",
+          isAuth: true,
         }
       },
       {
         path: 'meeting-list',
         name: 'meeting-list',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "meeting-list" */ '../views/MeetingManagement/MeetingList.vue'),
-        meta:{
-          title:"会议列表"
+        meta: {
+          title: "会议列表",
+          isAuth: true,
         }
       },
       {
         path: 'create-apply-form',
         name: 'create-apply-form',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "create-apply-form" */ '../views/ApplyFormManagement/CreateApplyForm.vue'),
-        meta:{
-          title:"创建报名表"
+        meta: {
+          title: "创建报名表",
+          isAuth: true,
         }
       },
       {
         path: 'apply-form-list',
         name: 'apply-form-list',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "apply-form-list" */ '../views/ApplyFormManagement/ApplyFormList.vue'),
-        meta:{
-          title:"历史报名表"
+        meta: {
+          title: "历史报名表",
+          isAuth: true,
         }
       },
       {
         path: 'edit-account-info',
         name: 'edit-account-info',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "edit-account-info" */ '../views/SystemSetting/EditAccountInfo.vue'),
-        meta:{
-          title:"账号信息"
+        meta: {
+          title: "账号信息",
+          isAuth: true,
         }
       },
       {
         path: 'edit-password',
         name: 'edit-password',
-        isAuth:true,
+
         component: () => import(/* webpackChunkName: "edit-password" */ '../views/SystemSetting/EditPassword.vue'),
-        meta:{
-          title:"修改密码"
+        meta: {
+          title: "修改密码",
+          isAuth: true,
         }
       }
     ]
   },
-  
+
 
 ]
 

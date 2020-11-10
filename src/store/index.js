@@ -8,11 +8,20 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   plugins:[persistedstate({storage:window.sessionStorage})],
   state: {
-    isLogin:false,
     token:'',
-    menus:[]
+    user:{},
+    menus:[],
   },
   mutations: {
+    tokenM:(state,payload)=>{
+      state.token = payload
+    },
+    userM:(state,playload)=>{
+      state.user = playload
+    },
+    menusM:(state,playload)=>{
+      state.menus = [...playload]
+    }
   },
   actions: {
   },

@@ -9,13 +9,13 @@
         <div class="user-info-box">
           <a-dropdown>
             <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
-              超级管理员 <a-icon type="down" />
+              {{ user.name }} <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item key="1">
                 <a-icon type="setting" />修改信息
               </a-menu-item>
-              <a-menu-item key="2">
+              <a-menu-item key="2" @click="logOut">
                 <a-icon type="poweroff" />退出登录
               </a-menu-item>
             </a-menu>
@@ -30,33 +30,28 @@
             :default-open-keys="['sub1']"
             :style="{ height: '100%', borderRight: 0 }"
           >
-          <a-sub-menu key="sub1">
-              <span slot="title"><a-icon type="user" />签到管理</span>
-              <a-menu-item key="1"> 报名统计 </a-menu-item>
-              <a-menu-item key="2"> 签到统计 </a-menu-item>
-            </a-sub-menu>
-            <a-sub-menu key="sub2">
-              <span slot="title"><a-icon type="appstore" />会议管理</span>
-              <a-menu-item key="3"> 会议列表 </a-menu-item>
-              <a-menu-item key="4"> 创建会议 </a-menu-item>
-            </a-sub-menu>
-            <a-sub-menu key="sub3">
-              <span slot="title"><a-icon type="flag" />报名表管理</span>
-              <a-menu-item key="5"> 创建报名表 </a-menu-item>
-              <a-menu-item key="6"> 历史报名表 </a-menu-item>
-            </a-sub-menu>
-            <a-sub-menu key="sub4">
-              <span slot="title"><a-icon type="setting" />系统管理</span>
-              <a-menu-item key="7"> 账号信息 </a-menu-item>
-              <a-menu-item key="8"> 修改密码 </a-menu-item>
+            <a-sub-menu v-for="menu in menus" :key="menu.key">
+              <span slot="title"
+                ><a-icon :type="menu.icon" />{{ menu.name }}</span
+              >
+              <a-menu-item
+                v-for="item in menu.submenu"
+                :key="item.key"
+                @click="clickMenu(item.link)"
+              >
+                {{ item.name }}
+              </a-menu-item>
             </a-sub-menu>
           </a-menu>
         </a-layout-sider>
         <a-layout style="padding: 0 24px 24px">
           <a-breadcrumb style="margin: 16px 0">
-            <a-breadcrumb-item>Home</a-breadcrumb-item>
-            <a-breadcrumb-item>List</a-breadcrumb-item>
-            <a-breadcrumb-item>App</a-breadcrumb-item>
+            <a-breadcrumb-item
+              ><a-icon :type="breadcrumb.icon" style="margin-right:6px;" v-if="Object.keys(breadcrumb).length!==0" />{{
+                breadcrumb.parent
+              }}</a-breadcrumb-item
+            >
+            <a-breadcrumb-item>{{ breadcrumb.son }}</a-breadcrumb-item>
           </a-breadcrumb>
           <a-layout-content
             :style="{
@@ -77,39 +72,90 @@
 <script>
 import Vue from "vue";
 import { Layout, Menu, Dropdown, Icon, Breadcrumb } from "ant-design-vue";
-Vue.use(Layout).use(Menu).use(Dropdown).use(Icon).use(Breadcrumb);
+Vue.use(Layout)
+  .use(Menu)
+  .use(Dropdown)
+  .use(Icon)
+  .use(Breadcrumb);
 export default {
   name: "Main",
   data() {
     return {
       collapsed: false,
-      menus:[]
+      menus: [],
+      user: {},
+      routerName: "",
+      breadcrumb: {},
     };
   },
-  created(){
-    this.getMenuList()
+  created() {
+    this.user = this.$store.state.user;
+    this.menus = this.$store.state.menus;
+    this.routerName = this.$route.name;
 
-  },
-  methods:{
-    getMenuList:function(){
-      let token = sessionStorage.getItem("token")
-      this.axios.get('/getmenus',{
-        header:{
-          Authorization: "Bear " + token
-        }
-      }).then(res=>{
-        console.log(res)
-      }).catch(err=>{
-        console.log(JSON.stringify(err))
-      })
+    if (this.menus.length === 0) {
+      this.getMenuList();
+    } else {
+      this.getBread(this.routerName);
     }
-  }
+  },
+  methods: {
+    getMenuList: function() {
+      let token = this.$store.state.token;
+      this.axios
+        .get("/getmenus", {
+          headers: {
+            Authorization: "Bear " + token,
+          },
+        })
+        .then((res) => {
+          let data = res.data.data;
+          this.$store.commit("menusM", data);
+          this.menus = this.$store.state.menus;
+          this.getBread(this.routerName);
+        })
+        .catch((err) => {
+          console.log(JSON.stringify(err));
+        });
+    },
+
+    clickMenu: function(val) {
+      this.$router.push({ name: val });
+      this.getBread(val);
+    },
+
+    getBread: function(val) {
+      let parent = "",
+        icon = "",
+        son = "";
+      this.menus.find((item) => {
+        item.submenu.find((record) => {
+          if (record.link === val) {
+            parent = item.name;
+            icon = item.icon;
+            son = record.name;
+          }
+        });
+      });
+      this.breadcrumb = {
+        parent: parent,
+        icon: icon,
+        son: son,
+      };
+    },
+
+    logOut: function() {
+      this.$store.commit("tokenM", "");
+      sessionStorage.removeItem("vuex");
+      window.location.reload();
+    },
+  },
 };
 </script>
 
 <style lang="scss">
-.main{
-  height:100%;
+.main {
+  height: 100%;
 }
 #components-layout-demo-top-side-2 .logo {
   width: 120px;
@@ -137,7 +183,7 @@ export default {
     height: 40px;
     width: 40px;
     margin-top: 12px;
-    border-radius:50%;
+    border-radius: 50%;
     background: rgba(255, 255, 255, 0.85);
     color: #001529;
     font-size: 24px;
