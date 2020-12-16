@@ -27,8 +27,17 @@ const routes = [
     path: '/',
     name: 'Main',
     component: Main,
-    redirect: '/registration-statistics',
+    redirect: '/home',
     children: [
+      {
+        path:'home',
+        name:'home',
+        component: () => import(/* webpackChunkName: "home" */ '../views/Home.vue'),
+        meta:{
+          title:'首页',
+          isAuth:true
+        }
+      },
       {
         path: 'registration-statistics',
         name: 'registration-statistics',

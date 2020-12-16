@@ -27,9 +27,13 @@
           <a-menu
             mode="inline"
             :default-selected-keys="['1']"
-            :default-open-keys="['sub1']"
+            :default-open-keys="['sub0']"
             :style="{ height: '100%', borderRight: 0 }"
           >
+            <a-menu-item key="1" @click="clickMenu('home')">
+              <a-icon type="home" />
+              <span>首页</span>
+            </a-menu-item>
             <a-sub-menu v-for="menu in menus" :key="menu.key">
               <span slot="title"
                 ><a-icon :type="menu.icon" />{{ menu.name }}</span
@@ -44,21 +48,31 @@
             </a-sub-menu>
           </a-menu>
         </a-layout-sider>
-        <a-layout style="padding: 0 24px 24px">
-          <a-breadcrumb style="margin: 16px 0">
+        <a-layout style="padding: 0 24px;overflow:hidden" >
+          <a-breadcrumb style="margin: 16px 0" v-if="!isHome">
             <a-breadcrumb-item
-              ><a-icon :type="breadcrumb.icon" style="margin-right:6px;" v-if="Object.keys(breadcrumb).length!==0" />{{
-                breadcrumb.parent
-              }}</a-breadcrumb-item
+              ><a-icon
+                :type="breadcrumb.icon"
+                style="margin-right:6px;"
+                v-if="Object.keys(breadcrumb).length !== 0"
+              />{{ breadcrumb.parent }}</a-breadcrumb-item
             >
             <a-breadcrumb-item>{{ breadcrumb.son }}</a-breadcrumb-item>
+          </a-breadcrumb>
+          <a-breadcrumb style="margin: 16px 0" v-else>
+            <a-breadcrumb-item
+              ><a-icon
+                type="home"
+                style="margin-right:6px;"
+              />首页</a-breadcrumb-item
+            >
           </a-breadcrumb>
           <a-layout-content
             :style="{
               background: '#fff',
-              padding: '24px',
               margin: 0,
-              minHeight: '280px',
+              minHeight: '480px',
+              overflowY:'auto'
             }"
           >
             <router-view />
@@ -87,6 +101,17 @@ export default {
       routerName: "",
       breadcrumb: {},
     };
+  },
+  computed: {
+    isHome: function(){
+      let r = this.$route.name,c=false
+      if (r === "home") {
+        c = true
+      }else{
+        c=false
+      }
+      return c
+    }
   },
   created() {
     this.user = this.$store.state.user;
