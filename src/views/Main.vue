@@ -130,7 +130,7 @@ export default {
       this.axios
         .get("/getmenus", {
           headers: {
-            Authorization: "Bear " + token,
+            Authorization: "Bearer " + token,
           },
         })
         .then((res) => {

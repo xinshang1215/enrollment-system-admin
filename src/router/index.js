@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Main from '../views/Main.vue'
+import imgView from "@/views/imgView";
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,11 @@ const routes = [
     meta: {
       title: "登录"
     }
+  },
+  {
+    path: '/img-view',
+    name: 'imgView',
+    component: imgView,
   },
   {
     path: '/',

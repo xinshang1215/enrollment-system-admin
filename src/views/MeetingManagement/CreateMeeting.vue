@@ -54,7 +54,7 @@
                 list-type="picture-card"
                 class="avatar-uploader"
                 :show-upload-list="false"
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                action=""
                 :before-upload="beforeUpload"
                 @change="handleChange"
               >
@@ -62,14 +62,18 @@
                 <div v-else>
                   <a-icon :type="loading ? 'loading' : 'plus'" />
                   <div class="ant-upload-text">
-                    Upload
+                    上传封面
                   </div>
                 </div>
               </a-upload>
             </a-form-model-item>
           </a-form-model>
         </div>
-        <div v-if="current === 1">2</div>
+        <div v-if="current === 1">
+          <ue-editor style="height:100%" class="templateBox" v-model="editorValue"
+                     :value="editorValue"
+                     @inputE="handleGetHtml"></ue-editor>
+        </div>
         <div v-if="current === 2">3</div>
       </div>
       <div class="steps-action">
@@ -112,6 +116,7 @@ import {
   message,
   Upload,
 } from "ant-design-vue";
+import UeEditor from "@/components/ueEditor";
 Vue.use(PageHeader)
   .use(Form)
   .use(FormModel)
@@ -131,6 +136,7 @@ function getBase64(img, callback) {
 }
 export default {
   name: "CreateMeeting",
+  components: {UeEditor},
   data() {
     return {
       current: 0,
@@ -172,15 +178,18 @@ export default {
       },
       loading: false,
       imageUrl: '',
+      editorValue:''
     };
   },
   methods: {
     next() {
-     
+
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
+          if(this.current === 0){
+            sessionStorage.setItem('meetingData',JSON.stringify(this.form))
+          }
            this.current++;
-          alert('submit!');
         } else {
           console.log('error submit!!');
           return false;
@@ -189,23 +198,26 @@ export default {
     },
     prev() {
       this.current--;
+      if(this.current===0){
+        this.form = JSON.parse(sessionStorage.setItem('meetingData'))
+      }
     },
     complete() {
       message.info("创建成功");
     },
     handleChange(info) {
-      if (info.file.status === 'uploading') {
+      // if (info.file.status === 'uploading') {
         this.loading = true;
-        return;
-      }
-      if (info.file.status === 'done') {
+        // return;
+      // }
+      // if (info.file.status === 'done') {
         // Get this url from response in real world.
         getBase64(info.file.originFileObj, imageUrl => {
           this.imageUrl = imageUrl;
           this.form.cover = this.imageUrl
           this.loading = false;
         });
-      }
+      // }
     },
     beforeUpload(file) {
       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
@@ -217,6 +229,9 @@ export default {
         this.$message.error('Image must smaller than 2MB!');
       }
       return isJpgOrPng && isLt2M;
+    },
+    handleGetHtml(html) {
+      this.editorValue = html;
     },
   },
 };
