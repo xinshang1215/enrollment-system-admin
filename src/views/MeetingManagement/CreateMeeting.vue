@@ -48,7 +48,7 @@
               />
             </a-form-model-item>
             <a-form-model-item label="会议封面" prop="cover">
-              <a-input v-model="form.cover" hidden/>
+              <a-input v-model="form.cover" hidden />
               <a-upload
                 name="avatar"
                 list-type="picture-card"
@@ -70,11 +70,19 @@
           </a-form-model>
         </div>
         <div v-if="current === 1">
-          <ue-editor style="height:100%" class="templateBox" v-model="editorValue"
-                     :value="editorValue"
-                     @inputE="handleGetHtml"></ue-editor>
+          <quill-editor
+            ref="mQuillEditor"
+            v-model="editorValue"
+            :options="editorOption"
+            style="min-height:480px;"
+          />
         </div>
-        <div v-if="current === 2">3</div>
+        <div v-if="current === 2">
+          <div>
+            
+          </div>
+
+        </div>
       </div>
       <div class="steps-action">
         <a-button
@@ -116,7 +124,6 @@ import {
   message,
   Upload,
 } from "ant-design-vue";
-import UeEditor from "@/components/ueEditor";
 Vue.use(PageHeader)
   .use(Form)
   .use(FormModel)
@@ -128,7 +135,12 @@ Vue.use(PageHeader)
   .use(Switch)
   .use(Select)
   .use(Steps)
-  .use(message).use(Upload);
+  .use(message)
+  .use(Upload);
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
+import { quillEditor } from "vue-quill-editor";
 function getBase64(img, callback) {
   const reader = new FileReader();
   reader.addEventListener("load", () => callback(reader.result));
@@ -136,7 +148,7 @@ function getBase64(img, callback) {
 }
 export default {
   name: "CreateMeeting",
-  components: {UeEditor},
+  components: { quillEditor },
   data() {
     return {
       current: 0,
@@ -177,29 +189,45 @@ export default {
         cover: [{ required: true, message: "请上传会议封面", trigger: "blur" }],
       },
       loading: false,
-      imageUrl: '',
-      editorValue:''
+      imageUrl: "",
+      editorValue: "",
+      editorOption: {
+        placeholder: "此处编辑邀请函内容，建议以图片拼接为佳",
+        theme: "snow",
+      },
+      meeting:{}
     };
+  },
+  watch: {
+    editorValue(newVal) {
+      console.log(newVal);
+    },
   },
   methods: {
     next() {
-
-      this.$refs.ruleForm.validate(valid => {
-        if (valid) {
-          if(this.current === 0){
-            sessionStorage.setItem('meetingData',JSON.stringify(this.form))
+      if (this.current === 0) {
+        this.$refs.ruleForm.validate((valid) => {
+          if (valid) {
+            sessionStorage.setItem("meetingData", JSON.stringify(this.form));
+          } else {
+            console.log("error submit!!");
+            return false;
           }
-           this.current++;
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
+        });
+      }else if(this.current === 1){
+        sessionStorage.setItem("detail",JSON.stringify(this.editorValue))
+        let meetingData = JSON.parse(sessionStorage.getItem('meetingData'))
+        this.meeting={id:'meeting00011',...meetingData,detail:this.editorValue}
+        sessionStorage.setItem('meeting',JSON.stringify(this.meeting))
+      }
+      this.current++;
     },
     prev() {
       this.current--;
-      if(this.current===0){
-        this.form = JSON.parse(sessionStorage.setItem('meetingData'))
+      if (this.current === 0) {
+        this.form = JSON.parse(sessionStorage.setItem("meetingData"));
+      } else if (this.current === 1) {
+        this.editorValue = JSON.parse(sessionStorage.setItem("detail"));
       }
     },
     complete() {
@@ -207,31 +235,29 @@ export default {
     },
     handleChange(info) {
       // if (info.file.status === 'uploading') {
-        this.loading = true;
-        // return;
+      this.loading = true;
+      // return;
       // }
       // if (info.file.status === 'done') {
-        // Get this url from response in real world.
-        getBase64(info.file.originFileObj, imageUrl => {
-          this.imageUrl = imageUrl;
-          this.form.cover = this.imageUrl
-          this.loading = false;
-        });
+      // Get this url from response in real world.
+      getBase64(info.file.originFileObj, (imageUrl) => {
+        this.imageUrl = imageUrl;
+        this.form.cover = this.imageUrl;
+        this.loading = false;
+      });
       // }
     },
     beforeUpload(file) {
-      const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+      const isJpgOrPng =
+        file.type === "image/jpeg" || file.type === "image/png";
       if (!isJpgOrPng) {
-        this.$message.error('You can only upload JPG file!');
+        this.$message.error("You can only upload JPG file!");
       }
       const isLt2M = file.size / 1024 / 1024 < 2;
       if (!isLt2M) {
-        this.$message.error('Image must smaller than 2MB!');
+        this.$message.error("Image must smaller than 2MB!");
       }
       return isJpgOrPng && isLt2M;
-    },
-    handleGetHtml(html) {
-      this.editorValue = html;
     },
   },
 };
@@ -239,7 +265,7 @@ export default {
 
 <style>
 .create-meeting {
-  margin-bottom:24px;
+  margin-bottom: 24px;
 }
 .create-meeting .form-box {
   width: 960px;
@@ -254,6 +280,17 @@ export default {
   border: 1px solid #e8e8e8;
   background-color: #f5f5f5;
   margin: 24px 0;
+}
+.steps-content > div {
+  min-height: 100%;
+  overflow: hidden;
+}
+.ql-toolbar {
+  background: #fff;
+}
+.ql-editor {
+  min-height: 480px;
+  background: #fff;
 }
 .avatar-uploader > .ant-upload {
   width: 128px;

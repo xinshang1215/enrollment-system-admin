@@ -27,7 +27,7 @@
           <a-menu
             mode="inline"
             :default-selected-keys="['1']"
-            :default-open-keys="['sub0']"
+            :default-open-keys="['sub0','sub1','sub2']"
             :style="{ height: '100%', borderRight: 0 }"
           >
             <a-menu-item key="1" @click="clickMenu('home')">
